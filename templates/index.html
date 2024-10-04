@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل جودة التمور</title>
+</head>
+<body>
+    <h1>قم بتحميل أو التقاط صورة التمر</h1>
+
+    <h2>تحميل صورة</h2>
+    <form action="/load_image" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">تحميل الصورة</button>
+    </form>
+
+
+
+    <h2>التقاط صورة من الكاميرا</h2>
+    <video id="video" width="320" height="240" autoplay></video>
+    <button id="snap">التقاط صورة</button>
+    <canvas id="canvas" width="320" height="240"></canvas>
+    <form id="upload-form" action="/load_image" method="POST" enctype="multipart/form-data">
+        <input type="hidden" id="image-data" name="image">
+        <button type="submit">رفع الصورة</button>
+    </form>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const snap = document.getElementById('snap');
+        const uploadForm = document.getElementById('upload-form');
+        const imageDataInput = document.getElementById('image-data');
+        const context = canvas.getContext('2d');
+
+        // الوصول إلى الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing the camera: ", err);
+            });
+
+        // التقاط صورة
+        snap.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // تحويل الصورة إلى بيانات صورة مشفرة (Base64)
+            const dataURL = canvas.toDataURL('image/jpeg');
+            imageDataInput.value = dataURL;  // تعيين بيانات الصورة في حقل الإدخال
+        });
+
+        // عند رفع الصورة، يمكن إيقاف الفيديو
+        uploadForm.addEventListener('submit', () => {
+            video.srcObject.getTracks().forEach(track => track.stop()); // إيقاف الكاميرا
+        });
+    </script>
+
+</body>
+</html>
